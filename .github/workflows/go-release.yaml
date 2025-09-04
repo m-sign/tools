@@ -12,11 +12,11 @@ jobs:
       contents: write # to be able to publish a GitHub release
     steps:
     - name: Install Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
         go-version: stable
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v5
     - name: Build
       env:
         RELEASE: ${{ github.event.release.tag_name }}

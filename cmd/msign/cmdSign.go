@@ -15,14 +15,14 @@ var signCmd = &cobra.Command{
 	Short:        "Sign file(s)",
 	SilenceUsage: true,
 	Long:         ``,
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return fmt.Errorf("requires at least one file")
-		}
+    Args: func(cmd *cobra.Command, args []string) error {
+        if len(args) < 1 {
+            return fmt.Errorf("requires at least one file")
+        }
 
-		if privateFile == "" && os.Getenv(msign_Env_Private) == "" {
-			return fmt.Errorf("MSIGN_PRIVATE environtment variable or --private option is required")
-		}
+        if privateFile == "" && os.Getenv(msign_Env_Private) == "" {
+            return fmt.Errorf("MSIGN_PRIVATE environment variable or --private option is required")
+        }
 
 		if privateFile != "" {
 			if _, err := os.Stat(privateFile); os.IsNotExist(err) {
@@ -30,10 +30,10 @@ var signCmd = &cobra.Command{
 			}
 		}
 
-		for _, arg := range args {
-			if _, err := os.Stat(arg); os.IsNotExist(err) {
-				return fmt.Errorf("file %s does not exist", arg)
-			}
+        for _, arg := range args {
+            if _, err := os.Stat(arg); os.IsNotExist(err) {
+                return fmt.Errorf("file %s does not exist", arg)
+            }
 
 			if signToFile && !forceOverwrite {
 				if _, err := os.Stat(arg + ".msign"); err == nil {
@@ -66,39 +66,41 @@ var signCmd = &cobra.Command{
 			return err
 		}
 
-		for _, arg := range args {
-			inFile, err := os.Open(arg)
-			if err != nil {
-				return err
-			}
-			defer inFile.Close()
+        for _, arg := range args {
+            inFile, err := os.Open(arg)
+            if err != nil {
+                return err
+            }
+            defer inFile.Close()
 
 			sign, err := priv.Sign(inFile)
 			if err != nil {
 				return err
 			}
 
-			output := os.Stdout
-			if signToFile {
-				outFile, err := os.Create(arg + ".msign")
-				if err != nil {
-					return err
-				}
-				defer outFile.Close()
-				output = outFile
-			}
+            output := os.Stdout
+            if signToFile {
+                outFile, err := os.Create(arg + ".msign")
+                if err != nil {
+                    return err
+                }
+                defer outFile.Close()
+                output = outFile
+            }
 
-			fmt.Print("Signature for ", arg, ": ")
-			err = msign.Export(output, sign)
-			if err != nil {
-				return err
-			}
-			if output != os.Stdout {
-				fmt.Println("saved to", arg+".msign")
-			}
-		}
-		return err
-	},
+            if !signToFile {
+                fmt.Print("Signature for ", arg, ": ")
+            }
+            err = msign.Export(output, sign)
+            if err != nil {
+                return err
+            }
+            if output != os.Stdout {
+                fmt.Println("saved to", arg+".msign")
+            }
+        }
+        return err
+    },
 }
 
 func init() {

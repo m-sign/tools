@@ -114,10 +114,10 @@ var keyPublicCmd = &cobra.Command{
 	Short:        "Get public key from private key",
 	Long:         ``,
 	SilenceUsage: true,
-	Args: func(cmd *cobra.Command, args []string) error {
-		if privateFile == "" && os.Getenv(msign_Env_Private) == "" {
-			return fmt.Errorf("MSIGN_PRIVATE environtment variable or --private option is required")
-		}
+    Args: func(cmd *cobra.Command, args []string) error {
+        if privateFile == "" && os.Getenv(msign_Env_Private) == "" {
+            return fmt.Errorf("MSIGN_PRIVATE environment variable or --private option is required")
+        }
 
 		if len(args) > 0 {
 			return fmt.Errorf("no arguments are allowed")
@@ -193,10 +193,10 @@ var keyIdCmd = &cobra.Command{
 	Short:        "Show key ID",
 	Long:         ``,
 	SilenceUsage: true,
-	Args: func(cmd *cobra.Command, args []string) error {
-		if privateFile == "" && os.Getenv(msign_Env_Private) == "" && publicFile == "" && os.Getenv(msign_Env_Public) == "" {
-			return fmt.Errorf("MSIGN_PRIVATE or MSIGN_PUBLIC environtment variable or --private or --public option is required")
-		}
+    Args: func(cmd *cobra.Command, args []string) error {
+        if privateFile == "" && os.Getenv(msign_Env_Private) == "" && publicFile == "" && os.Getenv(msign_Env_Public) == "" {
+            return fmt.Errorf("MSIGN_PRIVATE or MSIGN_PUBLIC environment variable or --private or --public option is required")
+        }
 
 		if len(args) > 0 {
 			return fmt.Errorf("no arguments are allowed")
@@ -208,11 +208,11 @@ var keyIdCmd = &cobra.Command{
 			}
 		}
 
-		if publicFile != "" {
-			if _, err := os.Stat(privateFile); os.IsNotExist(err) {
-				return fmt.Errorf("file %s does not exist", privateFile)
-			}
-		}
+        if publicFile != "" {
+            if _, err := os.Stat(publicFile); os.IsNotExist(err) {
+                return fmt.Errorf("file %s does not exist", publicFile)
+            }
+        }
 
 		return nil
 	},
@@ -276,10 +276,10 @@ var (
 func init() {
 	keyNewCmd.Flags().StringVarP(&privateFile, "private", "", "", "save private key to file (default: print to stdout)")
 	keyNewCmd.Flags().StringVarP(&publicFile, "public", "", "", "save public key to file (default: print to stdout)")
-	keyIdCmd.Flags().StringVarP(&privateFile, "private", "", "", "get private key from file (default: environtment variable MSIGN_PRIVATE)")
-	keyIdCmd.Flags().StringVarP(&publicFile, "public", "", "", "get public key from file (default: environtment variable MSIGN_PUBLIC)")
-	keyPublicCmd.Flags().StringVarP(&privateFile, "private", "", "", "get private key from file (default: environtment variable MSIGN_PRIVATE)")
-	keyPublicCmd.Flags().StringVarP(&publicFile, "public", "", "", "save public key to file file (default: print to stdout)")
+    keyIdCmd.Flags().StringVarP(&privateFile, "private", "", "", "get private key from file (default: environment variable MSIGN_PRIVATE)")
+    keyIdCmd.Flags().StringVarP(&publicFile, "public", "", "", "get public key from file (default: environment variable MSIGN_PUBLIC)")
+    keyPublicCmd.Flags().StringVarP(&privateFile, "private", "", "", "get private key from file (default: environment variable MSIGN_PRIVATE)")
+    keyPublicCmd.Flags().StringVarP(&publicFile, "public", "", "", "save public key to file (default: print to stdout)")
 
 	keyCmd.AddCommand(keyNewCmd)
 	keyCmd.AddCommand(keyPublicCmd)

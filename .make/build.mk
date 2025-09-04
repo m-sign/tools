@@ -48,8 +48,8 @@ check.static: tools.staticcheck ## do staticcheck checks
 	$(GOSTATICCHECK) $(GOTAGS) ./...
 
 .PHONY=check.fmt
-check.fmt: ## do check for right formating
-	@test -z "$(shell gofmt -s -l . | tee /dev/stderr)" || (echo "Formating is needed (please do 'make format')"; false)
+check.fmt: ## do check for right formatting
+	@test -z "$(shell gofmt -s -l . | tee /dev/stderr)" || (echo "Formatting is needed (please do 'make format')"; false)
 
 .PHONY=clean clean/%
 clean: $(BINARIES:./cmd/%=clean/%) ## clean up files

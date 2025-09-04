@@ -20,9 +20,9 @@ var verifyCmd = &cobra.Command{
 			return fmt.Errorf("requires at least one file")
 		}
 
-		if publicFile == "" && os.Getenv(msign_Env_Public) == "" {
-			return fmt.Errorf("MSIGN_PUBLIC environtment variable or --public option is required")
-		}
+        if publicFile == "" && os.Getenv(msign_Env_Public) == "" {
+            return fmt.Errorf("MSIGN_PUBLIC environment variable or --public option is required")
+        }
 
 		if publicFile != "" {
 			if _, err := os.Stat(publicFile); os.IsNotExist(err) {
