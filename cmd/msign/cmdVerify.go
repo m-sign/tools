@@ -20,9 +20,9 @@ var verifyCmd = &cobra.Command{
 			return fmt.Errorf("requires at least one file")
 		}
 
-        if publicFile == "" && os.Getenv(msign_Env_Public) == "" {
-            return fmt.Errorf("MSIGN_PUBLIC environment variable or --public option is required")
-        }
+		if publicFile == "" && os.Getenv(msign_Env_Public) == "" {
+			return fmt.Errorf("MSIGN_PUBLIC environment variable or --public option is required")
+		}
 
 		if publicFile != "" {
 			if _, err := os.Stat(publicFile); os.IsNotExist(err) {
@@ -68,35 +68,11 @@ var verifyCmd = &cobra.Command{
 		var returnErr error
 
 		for _, arg := range args {
-			fmt.Print("Verifying ", arg, " : ")
-
-			signFile, err := os.Open(arg + ".msign")
+			verified, err := verifyFile(pub, arg)
 			if err != nil {
 				return err
 			}
-			defer signFile.Close()
-
-			sign, err := msign.ImportSignature(signFile)
-			if err != nil {
-				return err
-			}
-
-			inFile, err := os.Open(arg)
-			if err != nil {
-				return err
-			}
-			defer inFile.Close()
-
-			verified, err := pub.Verify(inFile, sign)
-
-			if err != nil {
-				return err
-			}
-
-			if verified {
-				fmt.Println("OK")
-			} else {
-				fmt.Println("FAILED")
+			if !verified {
 				returnErr = fmt.Errorf("verification failed for one or more files")
 			}
 		}
@@ -108,4 +84,37 @@ var verifyCmd = &cobra.Command{
 func init() {
 	verifyCmd.Flags().StringVarP(&publicFile, "public", "", "", "read public key from file (default: get public key from environment variable MSIGN_PUBLIC)")
 	rootCmd.AddCommand(verifyCmd)
+}
+
+func verifyFile(pub msign.PublicKey, arg string) (bool, error) {
+	fmt.Print("Verifying ", arg, " : ")
+
+	sigFile, err := os.Open(arg + ".msign")
+	if err != nil {
+		return false, err
+	}
+	defer sigFile.Close()
+
+	sign, err := msign.ImportSignature(sigFile)
+	if err != nil {
+		return false, err
+	}
+
+	inFile, err := os.Open(arg)
+	if err != nil {
+		return false, err
+	}
+	defer inFile.Close()
+
+	verified, err := pub.Verify(inFile, sign)
+	if err != nil {
+		return false, err
+	}
+
+	if verified {
+		fmt.Println("OK")
+	} else {
+		fmt.Println("FAILED")
+	}
+	return verified, nil
 }
