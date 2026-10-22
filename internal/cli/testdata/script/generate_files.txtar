@@ -1,0 +1,27 @@
+# Generate a key pair into files.
+exitcode 0 msign key generate --private my.key --public my.pub
+stderr '^Key ID: [0-9a-f]{12}$'
+stderr '^Private key saved to my.key$'
+stderr '^Public key saved to my.pub$'
+! stdout .
+grep '^KEY:[A-Za-z0-9_-]{103}$' my.key
+grep '^PUB:[A-Za-z0-9_-]{52}$' my.pub
+
+# The two files belong together.
+exitcode 0 msign key id --private my.key --public my.pub
+
+# Existing key files are never overwritten, and nothing is written.
+exitcode 2 msign key generate --private my.key --public other.pub
+stderr 'my.key already exists'
+! exists other.pub
+exitcode 2 msign key generate --private other.key --public my.pub
+stderr 'my.pub already exists'
+! exists other.key
+
+# The private and public key need different files.
+exitcode 2 msign key generate --private same --public same
+stderr 'different files'
+! exists same
+
+# No arguments are accepted.
+exitcode 2 msign key generate extra

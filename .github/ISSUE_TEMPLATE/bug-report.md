@@ -10,7 +10,9 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
-**Version of Go (`go version`)?**
+**Version of msign (`msign version`)?**
+
+**Operating system and architecture?**
 
 **To Reproduce (observed behavior)**
 Steps to reproduce the behavior (please share code or minimal repo)

@@ -1,0 +1,33 @@
+# No key at all is an error.
+exitcode 2 msign key id
+stderr 'no key'
+
+# One key: the bare key ID.
+exitcode 0 msign key id --public a.pub
+stdout '\A386e418a77ca\n\z'
+exitcode 0 msign key id --private a.key
+stdout '\A386e418a77ca\n\z'
+
+# A matching pair.
+exitcode 0 msign key id --private a.key --public a.pub
+stdout '^private: 386e418a77ca$'
+stdout '^public:  386e418a77ca$'
+
+# A pair that does not match exits with status 1.
+exitcode 1 msign key id --private a.key --public b.pub
+stdout '^public:  21fe31dfa154$'
+stderr 'do not belong together'
+
+# The same check with keys from the environment.
+env MSIGN_PRIVATE=KEY:Aef8KiD8bThuQYp3yj8fa9UXgTjCrsEPBmI-fdmdzJqFOG66u2Jt7-2W9v8CBoVotJnc96GlXwmXEoTTXEV2KXW1J-ywL3e6Xd9vMV8
+env MSIGN_PUBLIC=PUB:ASH-Md-hVNdamAGCsQq31Uv-08lkBzoO4XLz2qYjJa8CGmj3B1Ea
+exitcode 1 msign key id
+env MSIGN_PUBLIC=PUB:AThuQYp3ygaFaLSZ3PehpV8JlxKE01xFdil1tSfssC93ul3fbzFf
+exitcode 0 msign key id
+
+-- a.key --
+KEY:Aef8KiD8bThuQYp3yj8fa9UXgTjCrsEPBmI-fdmdzJqFOG66u2Jt7-2W9v8CBoVotJnc96GlXwmXEoTTXEV2KXW1J-ywL3e6Xd9vMV8
+-- a.pub --
+PUB:AThuQYp3ygaFaLSZ3PehpV8JlxKE01xFdil1tSfssC93ul3fbzFf
+-- b.pub --
+PUB:ASH-Md-hVNdamAGCsQq31Uv-08lkBzoO4XLz2qYjJa8CGmj3B1Ea

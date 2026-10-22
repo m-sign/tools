@@ -1,0 +1,7 @@
+exitcode 0 msign --version
+stdout '^msign \S+ \(.*\)$'
+exitcode 0 msign version
+stdout '^msign '
+stdout '^  platform: '
+exitcode 0 msign version --short
+stdout '\A\S+\n\z'

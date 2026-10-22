@@ -1,72 +1,29 @@
 # Go parameters
-GOVARS=CGO_ENABLED=0
-GOCMD=go
-GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOVARS) $(GOCMD) test
-GOTOOL=$(GOCMD) tool
-GOVET=$(GOCMD) vet
-GOGET=$(GOVARS) $(GOCMD) get
-GOLDGLAGS=-X main.buildnumber=$(BUILDNUMBER) -X main.giturl=$(GITURL) -X main.binary=$(BINARY_OUT) -X main.githash=$(subst $(SPACE),$(UNDERSCORE),$(GITHASH)) -X main.buildstamp=$(TIMESTAMP)
-GOBUILDOPT=-a -ldflags "$(GOLDGLAGS) $(GOLDFLAGSEXTRA)"
-GOBUILD=$(GOVARS) $(GOCMD) build $(GOTAGS) $(GOBUILDOPT)
-GOBUILDOUT=-o bin/${@:build/./cmd/%=%}$(BINARY_EXT)
+GOCMD = go
+GOVARS = CGO_ENABLED=0
+GOOUTDIR = bin
+HOSTDIR = build/host
 
-BINARY_A = $(@:build.go/%=%)
-BINARY_OUT = $(BINARY_A:build/./cmd/%=%)$(BINARY_EXT)
+# Version information embedded in the binaries. DATE is the commit time, not
+# the build time, so that builds of the same commit are reproducible.
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo devel)
+COMMIT ?= $(shell git rev-parse HEAD 2>/dev/null)
+DATE ?= $(shell git log -1 --format=%cI 2>/dev/null)
 
-GOFMT=$(GOCMD) fmt
-GOSTATICCHECK=staticcheck
-GOIMPORTS=goimports
-MSIGN=msign
+VERSIONPKG = $(GOMODULE)/internal/version
+LDFLAGS = -s -w -X $(VERSIONPKG).Version=$(VERSION) -X $(VERSIONPKG).Commit=$(COMMIT) -X $(VERSIONPKG).Date=$(DATE)
+GOBUILD = $(GOVARS) $(GOCMD) build -trimpath -ldflags "$(LDFLAGS)"
 
-GOOUTDIR=bin
-
-TMPLMODULE=github.com/mmelnyk/golang-project-layout
-TMPLMARKER=.go-layout
-
-UNDERSCORE:= _
-EMPTY:=
-SPACE:= $(EMPTY) $(EMPTY)
-
-# Setup features build tags
-ifeq ($(FEATURE_SHOW_VERSION),yes)
-	GOTAGS := $(GOTAGS)showversion,
-endif
-
-ifeq ($(FEATURE_SELF_UPDATE),yes)
-	GOTAGS := $(GOTAGS)selfupdate,
-	ifeq ($(MSIGN_SIGNATURE),yes)
-		GOLDFLAGSEXTRA := $(GOLDFLAGSEXTRA) -X $(GOMODULE)/internal/selfupdate.msignPublic=$(MSIGN_PUBLIC)
-	endif
-endif
-
-ifneq ($(GOTAGS),)
-	GOTAGS := -tags "$(GOTAGS)"
-endif
+# Tools
+GOLANGCI_LINT = golangci-lint
+GOVULNCHECK = $(GOCMD) run golang.org/x/vuln/cmd/govulncheck@v1.9.0
+SHA256SUM := $(shell command -v sha256sum >/dev/null 2>&1 && echo sha256sum || echo "shasum -a 256")
 
 # Platform specific settings
+HOST_EXT :=
 ifeq ($(OS),Windows_NT)
-    uname := Windows
-else
-    uname := $(shell uname)
+	HOST_EXT := .exe
 endif
 
-BINARY_EXT :=
-ifeq ($(GOOS),windows) ## Use .exe if our target platform is Windows
-	BINARY_EXT := .exe
-endif
-ifeq ($(uname),Windows) ## On Windows...
-ifeq ($(GOOS),) ## ... use .exe if there are no specified target platform
-	BINARY_EXT := .exe
-endif
-endif
-
-SEDI := sed -i
-ifeq ($(uname),Darwin) # Mac OS X
-    SEDI := sed -i ""
-endif
-
-# Initialization detection
-ifneq (,$(wildcard $(TMPLMARKER)))
-    NEEDED_INIIALIZATION :=yes
-endif
+# exe returns .exe for windows targets
+exe = $(if $(findstring windows,$(1)),.exe)

@@ -1,0 +1,6 @@
+# Without files, stdout holds exactly the KEY line and then the PUB line.
+exitcode 0 msign key generate
+stdout -count=2 '^.+$'
+stdout '\AKEY:[A-Za-z0-9_-]{103}\nPUB:[A-Za-z0-9_-]{52}\n\z'
+stderr '^Key ID: [0-9a-f]{12}$'
+! stderr 'KEY:'

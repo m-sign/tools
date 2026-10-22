@@ -1,0 +1,47 @@
+version: "2"
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - copyloopvar
+    - errname
+    - errorlint
+    - gocritic
+    - gosec
+    - misspell
+    - nilerr
+    - revive
+    - unparam
+    - usestdlibvars
+  settings:
+    errcheck:
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+    revive:
+      rules:
+        - name: exported
+        - name: package-comments
+        - name: var-naming
+        - name: error-strings
+        - name: error-naming
+        - name: receiver-naming
+        - name: indent-error-flow
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - gosec
+      # File paths come from the command line by design.
+      - path: internal/cli/
+        linters:
+          - gosec
+        text: G304
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true

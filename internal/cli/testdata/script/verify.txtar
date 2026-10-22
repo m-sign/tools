@@ -1,0 +1,64 @@
+env MSIGN_PUBLIC=PUB:AThuQYp3ygaFaLSZ3PehpV8JlxKE01xFdil1tSfssC93ul3fbzFf
+
+# A valid signature (the specification's kat-a vector for the empty message).
+exitcode 0 msign verify empty.txt
+stdout '\Aempty.txt: OK\n\z'
+
+# Each kind of failure exits with status 1 and gives a reason.
+exitcode 1 msign verify tampered.txt
+stdout '^tampered.txt: FAILED \(invalid signature\)$'
+stderr 'verification failed: 1 of 1 files'
+exitcode 1 msign verify other-key.txt
+stdout '^other-key.txt: FAILED \(key id mismatch\)$'
+exitcode 1 msign verify unsigned.txt
+stdout '^unsigned.txt: FAILED \(signature file not found\)$'
+exitcode 1 msign verify malformed.txt
+stdout '^malformed.txt: FAILED \(malformed signature file\)$'
+exitcode 1 msign verify gone.txt
+stdout '^gone.txt: FAILED \(cannot read file\)$'
+
+# Every file is checked, even after a failure.
+exitcode 1 msign verify tampered.txt empty.txt unsigned.txt
+stdout '^tampered.txt: FAILED'
+stdout '^empty.txt: OK$'
+stdout '^unsigned.txt: FAILED'
+stderr 'verification failed: 2 of 3 files'
+
+# --quiet prints only failures.
+exitcode 1 msign verify -q empty.txt tampered.txt
+! stdout 'OK'
+stdout '^tampered.txt: FAILED'
+exitcode 0 msign verify -q empty.txt
+! stdout .
+
+# A key file works the same as the environment.
+env MSIGN_PUBLIC=
+exitcode 0 msign verify --public a.pub empty.txt
+
+# Key problems exit with status 2.
+exitcode 2 msign verify empty.txt
+stderr 'no public key: use --public FILE or set MSIGN_PUBLIC'
+exitcode 2 msign verify --public missing.pub empty.txt
+exitcode 2 msign verify --public a.key empty.txt
+stderr 'invalid public key format'
+
+-- empty.txt --
+-- empty.txt.msign --
+SIG:AfX-JaGE2ThuQYp3yj5lhD628lINWXhOy0FW3EH4fFxe75_vO5ikhMY1JJdnDiOJoUcg7R5-yD1cRza8jR3g-A6dB1jNUVTQSwaopQk
+-- tampered.txt --
+not empty
+-- tampered.txt.msign --
+SIG:AfX-JaGE2ThuQYp3yj5lhD628lINWXhOy0FW3EH4fFxe75_vO5ikhMY1JJdnDiOJoUcg7R5-yD1cRza8jR3g-A6dB1jNUVTQSwaopQk
+-- other-key.txt --
+-- other-key.txt.msign --
+SIG:AUbeg7fq5CH-Md-hVAXBllQ_4aG0Rb2U92fyhAQlQdghygYCZ9uAFFwkQR-fqPdgBEweWqmP9y4pyiM09yGJ0rp42yKgVoPaupytPQc
+-- unsigned.txt --
+-- malformed.txt --
+-- malformed.txt.msign --
+SIG:not-a-signature
+-- gone.txt.msign --
+SIG:AfX-JaGE2ThuQYp3yj5lhD628lINWXhOy0FW3EH4fFxe75_vO5ikhMY1JJdnDiOJoUcg7R5-yD1cRza8jR3g-A6dB1jNUVTQSwaopQk
+-- a.pub --
+PUB:AThuQYp3ygaFaLSZ3PehpV8JlxKE01xFdil1tSfssC93ul3fbzFf
+-- a.key --
+KEY:Aef8KiD8bThuQYp3yj8fa9UXgTjCrsEPBmI-fdmdzJqFOG66u2Jt7-2W9v8CBoVotJnc96GlXwmXEoTTXEV2KXW1J-ywL3e6Xd9vMV8

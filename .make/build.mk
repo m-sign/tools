@@ -1,70 +1,35 @@
-.PHONY=all
-all: check test build ## Do check - test - build for the project
+.PHONY: all build test test-race check check.fmt check.vet lint vuln format clean
 
-.PHONY=prebuild
-prebuild:
-	$(eval TIMESTAMP ?= $(shell date -u '+%Y-%m-%d_%I:%M:%S%p'))
-	$(eval GITHASH := $(if $(GITHASH), $(GITHASH), $(shell git rev-parse HEAD 2>/dev/null|| echo N/A )))
-	$(eval BUILDNUMBER ?= DEVBUILD)
-	$(eval GITURL ?= $(shell git config --get remote.origin.url 2>/dev/null|| echo N/A))
+all: check test build ## do check - test - build for the project
 
-_bindir:
+build: ## build msign for this platform into bin/ (unsigned)
 	@mkdir -p $(GOOUTDIR)
+	$(GOBUILD) -o $(GOOUTDIR)/ $(BINARIES)
 
-_envcheck:
-ifeq ($(FEATURE_SELF_UPDATE),yes)
-ifeq ($(MSIGN_PUBLIC),)
-	$(error MSIGN_PUBLIC is undefined)
-endif
-endif
-ifeq ($(MSIGN_SIGNATURE),yes)
-ifeq ($(MSIGN_PRIVATE),)
-	$(error MSIGN_PRIVATE is undefined)
-endif
-endif
+test: ## run unit tests with code coverage info
+	@mkdir -p $(GOOUTDIR)
+	$(GOCMD) test -count=1 -coverprofile=$(GOOUTDIR)/cover.out ./...
+	$(GOCMD) tool cover -html=$(GOOUTDIR)/cover.out -o $(GOOUTDIR)/cover.html
 
-.PHONY=build build/%
-build: tools.msign _envcheck _bindir $(BINARIES:%=build/%) ## do project build
-build/%: prebuild
-	$(GOBUILD) $(GOBUILDOUT) ${@:build/%=%}
-ifeq ($(MSIGN_SIGNATURE),yes)
-	$(MSIGN) sign --force --to-file bin/${@:build/./cmd/%=%}$(BINARY_EXT)
-endif
+test-race: ## run unit tests with the race detector
+	CGO_ENABLED=1 $(GOCMD) test -race -count=1 ./...
 
-.PHONY=test
-test: _bindir prebuild  ## run unit tests with code coverage info
-	$(GOTEST) $(GOTAGS) -cover -coverprofile=$(GOOUTDIR)/cover.out -covermode=atomic ./...
-	$(GOTOOL) cover -html=$(GOOUTDIR)/cover.out -o $(GOOUTDIR)/cover.html
+check: check.fmt check.vet lint ## do static code checks
 
-.PHONY=check
-check: check.vet check.static ## do static code checks
+check.fmt: ## check formatting
+	@test -z "$$(gofmt -s -l .)" || { gofmt -s -l .; echo "Formatting is needed (please do 'make format')"; exit 1; }
 
-.PHONY=check.vet
 check.vet: ## do go vet checks
-	$(GOVET) $(GOTAGS) ./...
+	$(GOCMD) vet ./...
 
-.PHONY=check.static
-check.static: tools.staticcheck ## do staticcheck checks
-	$(GOSTATICCHECK) $(GOTAGS) ./...
+lint: ## run golangci-lint (v2.14 or later)
+	$(GOLANGCI_LINT) run ./...
 
-.PHONY=check.fmt
-check.fmt: ## do check for right formatting
-	@test -z "$(shell gofmt -s -l . | tee /dev/stderr)" || (echo "Formatting is needed (please do 'make format')"; false)
+vuln: ## check for known vulnerabilities
+	$(GOVULNCHECK) ./...
 
-.PHONY=clean clean/%
-clean: $(BINARIES:./cmd/%=clean/%) ## clean up files
-	$(GOCLEAN)
-	rm -f $(GOOUTDIR)/cover.out
-	rm -f $(GOOUTDIR)/cover.html
+format: ## format go code
+	gofmt -s -w .
 
-clean/%:
-	rm -f ${@:clean/%=$(GOOUTDIR)/%}$(BINARY_EXT)
-	rm -f ${@:clean/%=$(GOOUTDIR)/%}$(BINARY_EXT).msign
-
-ifeq ($(BUILD_MULTIPLATFORM),yes)
-clean: cleanmp
-endif
-
-.PHONY=format
-format: ## format go code (via gofmt)
-	$(GOFMT) ./...
+clean: ## clean up files
+	rm -rf $(GOOUTDIR) build

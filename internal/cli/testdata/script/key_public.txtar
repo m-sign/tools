@@ -1,0 +1,31 @@
+# Derive the public key from a private key file.
+exitcode 0 msign key public --private a.key
+cmp stdout a.pub
+
+# ... or from the environment, with or without a trailing newline.
+env MSIGN_PRIVATE=KEY:Aef8KiD8bThuQYp3yj8fa9UXgTjCrsEPBmI-fdmdzJqFOG66u2Jt7-2W9v8CBoVotJnc96GlXwmXEoTTXEV2KXW1J-ywL3e6Xd9vMV8
+exitcode 0 msign key public
+cmp stdout a.pub
+
+# Save it to a file; existing files are never overwritten.
+exitcode 0 msign key public --public out.pub
+cmp out.pub a.pub
+stderr '^Public key saved to out.pub$'
+exitcode 2 msign key public --public out.pub
+stderr 'out.pub already exists'
+
+# Errors exit with status 2.
+env MSIGN_PRIVATE=
+exitcode 2 msign key public
+stderr 'no private key: use --private FILE or set MSIGN_PRIVATE'
+exitcode 2 msign key public --private bad.key
+stderr 'bad.key: invalid private key format'
+exitcode 2 msign key public --private missing.key
+stderr 'missing.key'
+
+-- a.key --
+KEY:Aef8KiD8bThuQYp3yj8fa9UXgTjCrsEPBmI-fdmdzJqFOG66u2Jt7-2W9v8CBoVotJnc96GlXwmXEoTTXEV2KXW1J-ywL3e6Xd9vMV8
+-- a.pub --
+PUB:AThuQYp3ygaFaLSZ3PehpV8JlxKE01xFdil1tSfssC93ul3fbzFf
+-- bad.key --
+KEY:Aeb8KiD8bThuQYp3yj8fa9UXgTjCrsEPBmI-fdmdzJqFOG66u2Jt7-2W9v8CBoVotJnc96GlXwmXEoTTXEV2KXW1J-ywL3e6Xd9vMV8

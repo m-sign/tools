@@ -3,16 +3,13 @@
 # Golang module name
 GOMODULE = github.com/m-sign/tools
 
-# Other configuration
 # List of directories with binaries code
 BINARIES = \
 	./cmd/msign \
 
-# Support multiplatform builds
-BUILD_MULTIPLATFORM=yes
-
-# List of required builds
-BUILDS=\
+# Release builds: <GOOS>-<GOARCH>. The asset names bin/msign-<GOOS>-<GOARCH>[.exe]
+# must not change: deployed v0.1.x self-update clients look for them.
+BUILDS = \
 	darwin-amd64  \
 	darwin-arm64  \
 	linux-amd64   \
@@ -20,10 +17,6 @@ BUILDS=\
 	windows-amd64 \
 	windows-arm64 \
 
-# Sign binaries with MSIGN tool
-MSIGN_SIGNATURE=yes
-
-# Features section
-# Enable binary self-update
-FEATURE_SHOW_VERSION=yes
-FEATURE_SELF_UPDATE=yes
+# Public key that release signatures must verify with. The private key comes
+# from the MSIGN_PRIVATE environment variable.
+RELEASE_PUB ?= keys/release.pub

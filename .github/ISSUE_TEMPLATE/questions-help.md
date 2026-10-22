@@ -8,6 +8,6 @@ assignees: ''
 ---
 
 Confirm by changing [ ] to [x] below:
-- [ ] I've gone though [Wiki](https://github.com/m-sign/tools/wiki)
+- [ ] I've read the [README](https://github.com/m-sign/tools#readme) and `msign <command> --help`
 
 **Describe the question**

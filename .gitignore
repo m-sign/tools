@@ -37,3 +37,6 @@ cover.out
 cover.html
 
 core
+
+# Release tooling output
+build

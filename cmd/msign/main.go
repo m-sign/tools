@@ -1,23 +1,12 @@
+// Command msign creates m-sign keys, signs files and verifies signatures.
 package main
 
 import (
 	"os"
-	"path/filepath"
 
-	"github.com/spf13/cobra"
+	"github.com/m-sign/tools/internal/cli"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   filepath.Base(os.Args[0]),
-	Short: filepath.Base(os.Args[0]) + " is a tool for working with keys and signatures.",
-	Long:  "",
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Usage()
-	},
-}
-
 func main() {
-    if err := rootCmd.Execute(); err != nil {
-        os.Exit(1)
-    }
+	os.Exit(cli.Main(os.Args[1:], os.Stdout, os.Stderr, os.Getenv))
 }

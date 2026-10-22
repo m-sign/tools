@@ -1,0 +1,41 @@
+env MSIGN_PRIVATE=KEY:Aef8KiD8bThuQYp3yj8fa9UXgTjCrsEPBmI-fdmdzJqFOG66u2Jt7-2W9v8CBoVotJnc96GlXwmXEoTTXEV2KXW1J-ywL3e6Xd9vMV8
+
+# By default the signature is printed.
+exitcode 0 msign sign empty.txt
+stdout '^Signature for empty.txt: \QSIG:AfX-JaGE2ThuQYp3yj5lhD628lINWXhOy0FW3EH4fFxe75_vO5ikhMY1JJdnDiOJoUcg7R5-yD1cRza8jR3g-A6dB1jNUVTQSwaopQk\E$'
+! exists empty.txt.msign
+
+# --to-file saves FILE.msign.
+exitcode 0 msign sign -f empty.txt
+cmp empty.txt.msign want.msign
+stderr '^Signature for empty.txt saved to empty.txt.msign$'
+! stdout .
+
+# Existing signatures are only replaced with --force.
+exitcode 2 msign sign -f empty.txt
+stderr 'empty.txt.msign already exists \(use --force to replace it\)'
+cp other.msign empty.txt.msign
+exitcode 0 msign sign --force -f -q empty.txt
+! stderr .
+cmp empty.txt.msign want.msign
+
+# A key file works the same as the environment.
+env MSIGN_PRIVATE=
+exitcode 0 msign sign --private a.key empty.txt
+stdout '\QSIG:AfX-JaGE2ThuQYp3yj5lhD628lINWXhOy0FW3EH4fFxe75_vO5ikhMY1JJdnDiOJoUcg7R5-yD1cRza8jR3g-A6dB1jNUVTQSwaopQk\E'
+
+# Errors exit with status 2.
+exitcode 2 msign sign empty.txt
+stderr 'no private key'
+exitcode 2 msign sign --private a.key missing.txt
+stderr 'missing.txt'
+exitcode 2 msign sign --private a.key
+stderr 'requires at least 1 arg'
+
+-- empty.txt --
+-- want.msign --
+SIG:AfX-JaGE2ThuQYp3yj5lhD628lINWXhOy0FW3EH4fFxe75_vO5ikhMY1JJdnDiOJoUcg7R5-yD1cRza8jR3g-A6dB1jNUVTQSwaopQk
+-- other.msign --
+not a signature
+-- a.key --
+KEY:Aef8KiD8bThuQYp3yj8fa9UXgTjCrsEPBmI-fdmdzJqFOG66u2Jt7-2W9v8CBoVotJnc96GlXwmXEoTTXEV2KXW1J-ywL3e6Xd9vMV8

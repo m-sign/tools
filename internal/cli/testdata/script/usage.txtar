@@ -1,0 +1,22 @@
+# Help exits with status 0.
+exitcode 0 msign
+stdout 'Usage:'
+stdout 'Exit codes:'
+exitcode 0 msign --help
+stdout 'Available Commands:'
+exitcode 0 msign key
+stdout 'generate'
+exitcode 0 msign sign --help
+stdout '--to-file'
+
+# Usage errors exit with status 2.
+exitcode 2 msign nosuchcommand
+stderr 'unknown command'
+exitcode 2 msign verify
+stderr 'requires at least 1 arg'
+exitcode 2 msign sign --no-such-flag x
+stderr 'unknown flag'
+
+# The self-update command was removed in v1.
+exitcode 2 msign self-update
+stderr 'unknown command'

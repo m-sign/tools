@@ -1,0 +1,23 @@
+env MSIGN_PRIVATE=KEY:Aef8KiD8bThuQYp3yj8fa9UXgTjCrsEPBmI-fdmdzJqFOG66u2Jt7-2W9v8CBoVotJnc96GlXwmXEoTTXEV2KXW1J-ywL3e6Xd9vMV8
+env MSIGN_PUBLIC=PUB:AThuQYp3ygaFaLSZ3PehpV8JlxKE01xFdil1tSfssC93ul3fbzFf
+
+# --signature saves the signature to a chosen path.
+mkdir sigs
+exitcode 0 msign sign --signature sigs/custom.sig empty.txt
+cmp sigs/custom.sig want.msign
+! exists empty.txt.msign
+
+# ... and verify reads it from there.
+exitcode 0 msign verify --signature sigs/custom.sig empty.txt
+stdout '^empty.txt: OK$'
+
+# It needs exactly one file.
+exitcode 2 msign sign --signature x.sig empty.txt other.txt
+stderr 'exactly one file'
+exitcode 2 msign verify --signature sigs/custom.sig empty.txt other.txt
+stderr 'exactly one file'
+
+-- empty.txt --
+-- other.txt --
+-- want.msign --
+SIG:AfX-JaGE2ThuQYp3yj5lhD628lINWXhOy0FW3EH4fFxe75_vO5ikhMY1JJdnDiOJoUcg7R5-yD1cRza8jR3g-A6dB1jNUVTQSwaopQk
